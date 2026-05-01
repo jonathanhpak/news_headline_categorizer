@@ -28,7 +28,7 @@ sns.barplot(x=sentiment_counts.index, y=sentiment_counts.values, palette={'Posit
 plt.title('Sentiment Distribution of News Headlines')
 plt.xlabel('Sentiment')
 plt.ylabel('Count')
-#plt.show()
+plt.show()
 
 #visualize sentiment distribution by category
 sentiment_pct = (
@@ -37,11 +37,11 @@ sentiment_pct = (
     .unstack()
 )
 
-sentiment_pct.plot(kind="bar", stacked=True)
+sentiment_pct.plot(kind="bar", stacked=True, color={'Positive': 'green', 'Neutral': 'gray', 'Negative': 'red'})
 plt.title("Sentiment Percentage per Category")
-plt.xticks()
+plt.xticks(rotation=45)
 plt.tight_layout()
-# plt.show()
+plt.show()
 
 
 
@@ -88,5 +88,6 @@ def plot_top_tfidf(category, n=10):
     plt.tight_layout()
     plt.show()
 
-# top words for sports (visualization)
+# top words for sports/wellness (visualization)
 plot_top_tfidf("SPORTS")
+plot_top_tfidf("WELLNESS")
