@@ -25,7 +25,7 @@ import numpy as np
 
 grouped = df.groupby('category')[
     ['has_1_digit_num','has_2_digit_num','has_3_digit_num','has_4_digit_num']
-].sum().reset_index()
+].mean().reset_index()
 
 x = np.arange(len(grouped['category']))
 width = 0.2
@@ -36,11 +36,11 @@ colors = ['blue', 'green', 'orange', 'red']
 
 plt.figure(figsize=(14,6))
 for i in range(4):
-    plt.bar(x + i*width, grouped[cols[i]], width, label=labels[i], color=colors[i])
+    plt.bar(x + i*width, grouped[cols[i]] * 100, width, label=labels[i], color=colors[i])
 
 plt.xticks(x + 1.5*width, grouped['category'], rotation=35, ha='right')
-plt.ylabel('Number of headlines')
-plt.title('Headlines by digit length and category')
+plt.ylabel('Percentage of headlines')
+plt.title('Percentage of headlines by digit length and category')
 plt.legend()
 plt.grid(axis='y', alpha=0.3)
 
