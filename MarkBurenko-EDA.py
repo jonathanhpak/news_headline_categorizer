@@ -40,10 +40,20 @@ def count_matches(df):
 
 df = pd.read_csv('data/CleanedNews.csv')
 df['has_all_caps_word'] = has_all_caps_word(df)
-print(df.shape)
-print(df.head())
-print(find_unique_categories(df))
-x = find_unique_categories(df)
-y = count_matches(df)
+
+percentages = (
+    df.groupby("category")["has_all_caps_word"]
+    .mean() * 100
+)
+
+x = percentages.index
+y = percentages.values
+
+plt.figure(figsize=(10, 6))
 plt.bar(x, y)
+plt.title("Percentage of Headlines with All-Caps Words by Category")
+plt.xlabel("Category")
+plt.ylabel("Percentage of Headlines")
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
 plt.show()
