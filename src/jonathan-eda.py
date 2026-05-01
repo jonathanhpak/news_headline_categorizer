@@ -52,6 +52,7 @@ vectorizer = TfidfVectorizer(stop_words='english', lowercase=True, ngram_range=(
 tfidf_matrix = vectorizer.fit_transform(df['headline'])
 feature_names = vectorizer.get_feature_names_out()
 
+#print top words for each category
 def top_tfidf_words(category, n=10):
     row_indices = np.where(df["category"].values == category)[0]
     mean_scores = tfidf_matrix[row_indices].mean(axis=0).A1
@@ -65,6 +66,7 @@ for cat in df["category"].unique():
     print(f"\nTop words for {cat}:")
     print(", ".join(top_tfidf_words(cat)))
 
+#plotting
 def plot_top_tfidf(category, n=10):
     row_indices = np.where(df["category"].values == category)[0]
     mean_scores = tfidf_matrix[row_indices].mean(axis=0).A1
