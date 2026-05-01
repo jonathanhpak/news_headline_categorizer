@@ -1,7 +1,13 @@
-## EDA and feature engineering instructions
+## Initial model instructions
 
-### Step 1: Pull from remote repo
-As you can see, I've made some changes to the remote repo, including adding these instructions and creating the cleaned dataset. You'll need to update your local repos with these changes.
+### Step 1: Choose a model.
+Choose the model that you want to work on [here](https://docs.google.com/document/d/1b0MIjiUsNkucRr9dzQmKuuD5JdMtrOxLesxPLw9loNU/edit?tab=t.0).
+
+Read through the resources to learn more about the model. Feel free to find more articles/videos. Next meeting, we'll teach each other about the model you trained. 
+
+
+### Step 2: Pull from remote repo
+Update your local repo to get the dataset with the new feature columns you guys created as well as the example model training script (elasticnet.py).
 
 First, after you open the project in VS Code, make sure you are on the main branch:
 ``` shell
@@ -21,10 +27,10 @@ git pull
 Your local repo should be up to date now!
 
 
-### Step 2: Create a new local branch
-Create a local branch to do your EDA and feature engineering.
+### Step 3: Create a new local branch
+Create a local branch to train your model.
 ``` shell
-git checkout -b yourname-eda
+git checkout -b your-name/model-name
 ```
 
 Check to make sure you're on the newly-created branch:
@@ -33,30 +39,34 @@ git branch
 ```
 
 
-### Step 3: Create your file (and install any dependencies)
-Create a Python file in the news_headline_categorizer folder. Name it yourname-eda and don't forget the .py extension at the end.
+### Step 4: Create your file (and install any dependencies)
+Create a Python file in the news-headline-categorization folder. Name it your-model-name and don't forget the .py extension at the end.
 
-You'll mainly be using pandas for data wrangling and either matplotlib.pyplot or seaborn (maybe both) for visualization. Import these libraries at the top of your file and run them. You may need to pip install them.
+You'll be using modules from the scikit-learn library, as well as numpy and pandas.
 
-You may also need to install the Python extension in VS Code if it's your first time coding in Python in the application.
+### Step 5: Read through the example model
+I trained a logistic regression model on our data. You likely won't need to change any of the code except for replacing LogisticRegression with the name of your model and changing the model hyperparameters.
+
+However, please read through the code and understand the steps of training a model: (1) preparing the data, (2) splitting the data in train/validate and test, (3) creating the model pipelines, and (4) performing cross validation.
+
+Also, learn more about what each scikit-learn class and function does by reading its documentation or other articles. 
 
 
-### Step 4: Load the data
-Turn the .csv file into a DataFrame. Your Python file should look something like this:
+### Step 6: Train your model!
+Again, you won't be changing much from the example code, but rather than copy and pasting, try typing each block out to better understand what it's doing.
 
-``` python
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-df = pd.read_csv('data/CleanedNews.csv')
+You will need to decide the baseline hyperparameters for your model, i.e. this part of the code:
+```python
+# EDIT MODEL AND BASELINE HYPERPARAMETERS HERE! Keep random_state = 42 to ensure you get the same data splits every time. 
+pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', ElasticNet(alpha=0.01, l1_ratio=0.5, max_iter=10000, random_state=42)) 
+])
 ```
 
-You can make sure the data was loaded correctly by running df.head() to show the top 5 rows or df.shape to get the number of rows and columns of the DataFrame.
+Different models have different hyperparameters, so you will need to do some research into what they are and how they affect the model's performance. Next week, we'll tune our models' hyperparameters to find the combination that results in the most performant model. 
 
-
-### Step 5: Start exploring the data!
-Start on your [tasks](https://docs.google.com/document/d/1dqou90RACXlTGCMI1P5ABOtWaYsKlpMVF-qQ8WduHE4/edit?tab=t.0)! Message me with any questions or issues that you have.
+Note down your model's score!
 
 
 ## Some notes
