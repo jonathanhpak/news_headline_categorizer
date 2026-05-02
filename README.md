@@ -7,7 +7,7 @@ Read through the resources to learn more about the model. Feel free to find more
 
 
 ### Step 2: Pull from remote repo
-Update your local repo to get the dataset with the new feature columns you guys created as well as the example model training script (elasticnet.py).
+Update your local repo to get the dataset with the new feature columns you guys created as well as the example model training script (logistic-regressor.py).
 
 First, after you open the project in VS Code, make sure you are on the main branch:
 ``` shell
@@ -45,12 +45,10 @@ Create a Python file in the src/models folder. Name it your-model-name and don't
 You'll be using modules from the scikit-learn library.
 
 ### Step 5: Read through the example model
-I trained a logistic regression model on our data. You likely won't need to change any of the code except for replacing LogisticRegression with the name of your model and changing the model hyperparameters.
+I trained a logistic regression model on our data. You likely won't need to change any of the code except for replacing the import line and changing the model hyperparameters.
 
-However, please read through the code and understand the steps of training a model: (1) preparing the data, (2) splitting the data into train/test sets, (3) creating the model pipelines, and (4) performing cross validation.
-
-Also, learn more about what each scikit-learn class and function does by reading its documentation or other articles. 
-
+However, please read through the code and understand the steps of training a model: (1) preparing the data, (2) splitting the data into train/test sets, (3) 
+It's okay if you don't understand exactly what the code is doing, just try to get a high-level overview of the whole process! If you have any questions about it feel free to message me or bring it up at the next meeting.
 
 ### Step 6: Train your model!
 Again, you won't be changing much from the example code, but rather than copy and pasting, try typing each block out to better understand what it's doing.
