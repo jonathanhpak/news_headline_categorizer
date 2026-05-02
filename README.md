@@ -47,7 +47,7 @@ You'll be using modules from the scikit-learn library.
 ### Step 5: Read through the example model
 I trained a logistic regression model on our data. You likely won't need to change any of the code except for replacing the import line and changing the model hyperparameters.
 
-However, please read through the code and understand the steps of training a model: (1) preparing the data, (2) splitting the data into train/test sets, (3) 
+However, please read through the code and understand the steps: preparing the data, splitting the data into train/test sets, training the model, and testing/evaluating the model. 
 It's okay if you don't understand exactly what the code is doing, just try to get a high-level overview of the whole process! If you have any questions about it feel free to message me or bring it up at the next meeting.
 
 ### Step 6: Train your model!
