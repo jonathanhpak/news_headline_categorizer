@@ -8,16 +8,18 @@ df["word_length"] = df["headline"].str.split().str.len()
 df["character_length"] = df["headline"].str.len()
 print(df.head())
 
+plot_df = df[(df["word_length"] < 30) & (df["character_length"] < 180)]
+
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(12, 6))
 
 plt.subplot(1, 2, 1) 
-sns.violinplot(data=df, x="category", y="word_length", palette="muted")
+sns.violinplot(data=plot_df, x="category", y="word_length", palette="muted")
 plt.title("Word Length Distribution by Category")
 plt.xticks(rotation=45)
 
 plt.subplot(1, 2, 2) 
-sns.violinplot(data=df, x="category", y="character_length", palette="magma")
+sns.violinplot(data=plot_df, x="category", y="character_length", palette="magma")
 plt.title("Character Length Distribution by Category")
 plt.xticks(rotation=45)
 
