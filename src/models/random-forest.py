@@ -53,6 +53,9 @@ X_test = hstack([X_text_test_tfidf, csr_matrix(X_eng_test_scaled)])
 #instantiate model
 #REPLACE WITH YOUR MODEL AND BASELINE HYPERPARAMETERS! Keep random_state = 42 for reproducibility.
 model = RandomForestClassifier(
+    n_estimators = 10,
+    max_depth = 100,
+    max_features = "sqrt"
 )
 
 #train model on training data
