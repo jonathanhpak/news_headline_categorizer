@@ -25,7 +25,7 @@ sentiment_counts = df["sentiment"].value_counts()
 
 plt.figure(figsize=(8, 6))
 sns.barplot(x=sentiment_counts.index, y=sentiment_counts.values, palette={'Positive': 'green', 'Neutral': 'gray', 'Negative': 'red'})
-plt.title('Sentiment Distribution of News Headlines')
+plt.title('Sentiment Label Distribution')
 plt.xlabel('Sentiment')
 plt.ylabel('Count')
 plt.show()
@@ -38,7 +38,7 @@ sentiment_pct = (
 )
 
 sentiment_pct.plot(kind="bar", stacked=True, color={'Positive': 'green', 'Neutral': 'gray', 'Negative': 'red'})
-plt.title("Sentiment Percentage per Category")
+plt.title("Sentiment Label Distribution by Category")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
