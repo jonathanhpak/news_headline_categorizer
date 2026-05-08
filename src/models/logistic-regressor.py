@@ -90,6 +90,7 @@ print(confusion_matrix(y_test, y_pred))
 # Fine-Tuning with GridSearchCV
 # Define possible hyperparameters to pass into the model and test in the GridSearchCV
 
+
 # LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
 param_grid = {
     "C": [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10],
