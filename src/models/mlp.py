@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import hstack, csr_matrix
@@ -8,6 +8,10 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 #IMPORT YOUR MODEL HERE
 from sklearn.neural_network import MLPClassifier
 
+#IMPORT STRATIFIEDKFOLD, GRIDSEARCHCV, SEABORN, MATPLOTLIB
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 #read dataset and drop unneeded columns
 df = pd.read_csv("data/HeadlinesWithFeatures.csv")
@@ -50,6 +54,12 @@ X_eng_test_scaled = scaler.transform(X_eng_test)
 X_train = hstack([X_text_train_tfidf, csr_matrix(X_eng_train_scaled)])
 X_test = hstack([X_text_test_tfidf, csr_matrix(X_eng_test_scaled)])
 
+# MLPClassifier's early_stopping path calls np.isnan on predicted labels,
+# which fails on string targets — encode to integers so it works.
+label_encoder = LabelEncoder()
+y_train = label_encoder.fit_transform(y_train)
+y_test = label_encoder.transform(y_test)
+
 #instantiate model
 #REPLACE WITH YOUR MODEL AND BASELINE HYPERPARAMETERS! Keep random_state = 42 for reproducibility.
 model = MLPClassifier(
@@ -58,8 +68,12 @@ model = MLPClassifier(
     solver='adam',               # Best general-purpose solver
     alpha=0.001,                 # Light regularization
     learning_rate_init=0.001,    # Default learning rate
-    max_iter=500,                # Give it more time to converge
-    random_state=42
+    max_iter=200,                # Give it more time to converge
+    early_stopping=True,         # stop when validation score plateaus
+    n_iter_no_change=10,
+    validation_fraction=0.1,
+    random_state=42,
+    verbose=False,
 )
 
 #train model on training data
@@ -78,3 +92,92 @@ print(classification_report(y_test, y_pred))
 
 print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
+
+
+# Fine-Tuning with GridSearchCV
+# Define possible hyperparameters to pass into the model and test in the GridSearchCV
+
+
+# LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
+param_grid = {
+    "hidden_layer_sizes": [(64,), (64, 32)],
+    "learning_rate_init": [0.0001, 0.001]
+}
+
+# Define the type of cross-validation to use. StratifiedKFold preserves class proportions across folds.
+kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+# Initialize GridSearchCV object with your model, grid of parameters, type of CV, and scoring metric
+grid = GridSearchCV(
+    model,
+    param_grid,
+    cv=kf,
+    scoring="f1_macro",
+    n_jobs=2
+)
+
+# Fit to the training/validation data
+grid.fit(X_train, y_train)
+
+# best_model is a trained model using the hyperparameter values that achieved the best cross-validation Macro F1 score
+best_model = grid.best_estimator_
+print(grid.best_params_)
+
+# Evaluate on final model on test data
+y_pred = best_model.predict(X_test)
+
+# Compute new performance metrics
+print("\n\nBest Model Performance on Test Set:")
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
+
+print("\nMacro F1:", f1_score(y_test, y_pred, average="macro"))
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# Graph 1: Confusion matrix heatmap
+cm = confusion_matrix(y_test, y_pred, labels=best_model.classes_)
+class_names = label_encoder.inverse_transform(best_model.classes_)
+
+plt.figure(figsize=(12, 8))
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    xticklabels=class_names,
+    yticklabels=class_names
+)
+plt.title("Confusion Matrix - MLP")
+plt.xlabel("Predicted Category")
+plt.ylabel("Actual Category")
+plt.xticks(rotation=45, ha="right")
+plt.yticks(rotation=0)
+plt.tight_layout()
+
+# Graph 2: Per-category F1 score bar chart
+report = classification_report(y_test, y_pred, output_dict=True)
+
+f1_df = pd.DataFrame([
+    {
+        "category": label_encoder.inverse_transform([int(category)])[0],
+        "f1_score": scores["f1-score"]
+    }
+    for category, scores in report.items()
+    if category.isdigit() and int(category) in best_model.classes_
+])
+
+f1_df = f1_df.sort_values("f1_score", ascending=False)
+
+plt.figure(figsize=(12, 6))
+sns.barplot(data=f1_df, x="category", y="f1_score")
+plt.title("Per-Category F1 Scores - MLP")
+plt.xlabel("Category")
+plt.ylabel("F1 Score")
+plt.ylim(0, 1)
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+plt.show()
