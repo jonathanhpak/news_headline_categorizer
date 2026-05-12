@@ -140,16 +140,18 @@ print(confusion_matrix(y_test, y_pred))
 
 # Graph 1: Confusion matrix heatmap
 cm = confusion_matrix(y_test, y_pred, labels=best_model.classes_)
+cm_percent = cm / cm.sum(axis=1, keepdims=True) * 100
 class_names = label_encoder.inverse_transform(best_model.classes_)
 
 plt.figure(figsize=(12, 8))
 sns.heatmap(
-    cm,
+    cm_percent,
     annot=True,
-    fmt="d",
+    fmt=".1f",
     cmap="Blues",
     xticklabels=class_names,
-    yticklabels=class_names
+    yticklabels=class_names,
+    cbar_kws={"label": "% of Actual Category"}
 )
 plt.title("Confusion Matrix - MLP")
 plt.xlabel("Predicted Category")
