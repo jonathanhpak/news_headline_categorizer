@@ -5,6 +5,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import hstack, csr_matrix
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
 from xgboost import XGBClassifier
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 #IMPORT STRATIFIEDKFOLD, GRIDSEARCHCV, SEABORN, MATPLOTLIB
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
@@ -91,7 +93,7 @@ print(confusion_matrix(y_test, y_pred))
 # LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
 param_grid = {
     "n_estimators": [150, 200],
-    "max_depth": [4, 6],
+    "max_depth": [6],
     "learning_rate": [0.05, 0.1],
     "subsample": [0.8]
 }
@@ -137,15 +139,17 @@ print(confusion_matrix(y_test, y_pred))
 
 # Graph 1: Confusion matrix heatmap
 cm = confusion_matrix(y_test, y_pred, labels=class_labels)
+cm_percent = cm / cm.sum(axis=1, keepdims=True) * 100
 
 plt.figure(figsize=(12, 8))
 sns.heatmap(
-    cm,
+    cm_percent,
     annot=True,
-    fmt="d",
+    fmt=".1f",
     cmap="Blues",
     xticklabels=class_labels,
-    yticklabels=class_labels
+    yticklabels=class_labels,
+    cbar_kws={"label": "% of Actual Category"}
 )
 plt.title("Confusion Matrix - XGBoost")
 plt.xlabel("Predicted Category")
@@ -171,7 +175,7 @@ f1_df = f1_df.sort_values("f1_score", ascending=False)
 
 plt.figure(figsize=(12, 6))
 sns.barplot(data=f1_df, x="category", y="f1_score")
-plt.title("Per-Category F1 Scores - Logistic Regression")
+plt.title("Per-Category F1 Scores - XGBoost")
 plt.xlabel("Category")
 plt.ylabel("F1 Score")
 plt.ylim(0, 1)
