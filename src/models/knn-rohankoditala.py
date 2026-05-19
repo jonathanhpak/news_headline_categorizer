@@ -129,15 +129,17 @@ print(confusion_matrix(y_test, y_pred))
 #graphs
 # Graph 1: Confusion matrix heatmap
 cm = confusion_matrix(y_test, y_pred, labels=best_model.classes_)
+cm_percent = cm / cm.sum(axis=1, keepdims=True) * 100
 
 plt.figure(figsize=(12, 8))
 sns.heatmap(
-    cm,
+    cm_percent,
     annot=True,
-    fmt="d",
+    fmt=".1f",
     cmap="Blues",
     xticklabels=best_model.classes_,
-    yticklabels=best_model.classes_
+    yticklabels=best_model.classes_,
+    cbar_kws={"label": "% of Actual Category"}
 )
 plt.title("Confusion Matrix - Knn")
 plt.xlabel("Predicted Category")
