@@ -111,11 +111,11 @@ Hyperparameter tuning was performed using GridSearchCV with stratified K-fold cr
 | Model | Final Accuracy | Final Macro F1 |
 |---|---:|---:|
 | Logistic Regression | 0.758 | 0.755 |
-| LinearSVC | 0.769 | 0.766 |
-| MLP | 0.7695 | 0.7647 |
+| LinearSVC | 0.768 | 0.764 |
+| MLP | 0.770 | 0.765 |
 | XGBoost | 0.663 | 0.664 |
-| Random Forest | 0.61 | 0.61 |
-| KNN | 0.47 | 0.46 |
+| Random Forest | 0.613 | 0.606 |
+| KNN | 0.467 | 0.459 |
 
 Among the evaluated models, LinearSVC and MLP achieved the strongest overall performance on the classification task.
 
