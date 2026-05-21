@@ -58,7 +58,7 @@ model = LinearSVC(
     loss="squared_hinge",
     dual=False,
     tol=1e-4,
-    max_iter=5000,
+    max_iter=1000,
     class_weight="balanced",
     random_state=42
 )
@@ -79,3 +79,90 @@ print(classification_report(y_test, y_pred))
 
 print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
+
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+# LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
+param_grid = {
+    "C": [0.1, 1, 5],
+    "class_weight": [None, "balanced"]
+}
+# Define the type of cross-validation to use
+kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+# Initialize GridSearchCV
+grid = GridSearchCV(
+    LinearSVC(dual=False, random_state=42, penalty="l2", loss="squared_hinge"),
+    param_grid,
+    cv=kf,
+    scoring="f1_macro",
+    n_jobs=-1
+)
+
+# Fit to the training data
+grid.fit(X_train, y_train)
+
+# best_model is a trained model using the best hyperparameters
+best_model = grid.best_estimator_
+print(grid.best_params_)
+
+# Evaluate on test data
+y_pred = best_model.predict(X_test)
+
+# Compute performance metrics
+print("\n\nBest Model Performance on Test Set:")
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
+print("\nMacro F1:", f1_score(y_test, y_pred, average="macro"))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# Graph 1: Confusion matrix heatmap
+cm = confusion_matrix(y_test, y_pred, labels=best_model.classes_)
+cm_percent = cm / cm.sum(axis=1, keepdims=True) * 100
+
+plt.figure(figsize=(12, 8))
+sns.heatmap(
+    cm_percent,
+    annot=True,
+    fmt=".1f",
+    cmap="Blues",
+    xticklabels=best_model.classes_,
+    yticklabels=best_model.classes_,
+    cbar_kws={"label": "% of Actual Category"}
+)
+plt.title("Confusion Matrix - LinearSVC")
+plt.xlabel("Predicted Category")
+plt.ylabel("Actual Category")
+plt.xticks(rotation=45, ha="right")
+plt.yticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+# Graph 2: Per-category F1 score bar chart
+report = classification_report(y_test, y_pred, output_dict=True)
+
+f1_df = pd.DataFrame([
+    {
+        "category": category,
+        "f1_score": scores["f1-score"]
+    }
+    for category, scores in report.items()
+    if category in best_model.classes_
+])
+
+f1_df = f1_df.sort_values("f1_score", ascending=False)
+
+plt.figure(figsize=(12, 6))
+sns.barplot(data=f1_df, x="category", y="f1_score")
+plt.title("Per-Category F1 Scores - LinearSVC")
+plt.xlabel("Category")
+plt.ylabel("F1 Score")
+plt.ylim(0, 1)
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+plt.show()
