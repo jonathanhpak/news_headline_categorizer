@@ -1,9 +1,12 @@
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import hstack, csr_matrix
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
-from sklearn.linear_model import LogisticRegression
+
+#IMPORT YOUR MODEL HERE
+from sklearn.neural_network import MLPClassifier
 
 #IMPORT STRATIFIEDKFOLD, GRIDSEARCHCV, SEABORN, MATPLOTLIB
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
@@ -51,13 +54,26 @@ X_eng_test_scaled = scaler.transform(X_eng_test)
 X_train = hstack([X_text_train_tfidf, csr_matrix(X_eng_train_scaled)])
 X_test = hstack([X_text_test_tfidf, csr_matrix(X_eng_test_scaled)])
 
+# MLPClassifier's early_stopping path calls np.isnan on predicted labels,
+# which fails on string targets — encode to integers so it works.
+label_encoder = LabelEncoder()
+y_train = label_encoder.fit_transform(y_train)
+y_test = label_encoder.transform(y_test)
+
 #instantiate model
-model = LogisticRegression(
-    max_iter=3000,
-    C=2.0,
-    solver="lbfgs",
-    class_weight="balanced",
-    random_state=42
+#REPLACE WITH YOUR MODEL AND BASELINE HYPERPARAMETERS! Keep random_state = 42 for reproducibility.
+model = MLPClassifier(
+    hidden_layer_sizes=(64, 32), # Two layers: 64 neurons, then 32
+    activation='relu',           # Standard non-linearity
+    solver='adam',               # Best general-purpose solver
+    alpha=0.001,                 # Light regularization
+    learning_rate_init=0.001,    # Default learning rate
+    max_iter=200,                # Give it more time to converge
+    early_stopping=True,         # stop when validation score plateaus
+    n_iter_no_change=10,
+    validation_fraction=0.1,
+    random_state=42,
+    verbose=False,
 )
 
 #train model on training data
@@ -78,23 +94,14 @@ print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
 
-
-
-
-
-
-
-
-
-
 # Fine-Tuning with GridSearchCV
 # Define possible hyperparameters to pass into the model and test in the GridSearchCV
 
 
 # LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
 param_grid = {
-    "C": [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10],
-    "class_weight": [None, "balanced"]
+    "hidden_layer_sizes": [(64,), (64, 32)],
+    "learning_rate_init": [0.0001, 0.001]
 }
 
 # Define the type of cross-validation to use. StratifiedKFold preserves class proportions across folds.
@@ -106,7 +113,7 @@ grid = GridSearchCV(
     param_grid,
     cv=kf,
     scoring="f1_macro",
-    n_jobs=-1
+    n_jobs=2
 )
 
 # Fit to the training/validation data
@@ -134,6 +141,7 @@ print(confusion_matrix(y_test, y_pred))
 # Graph 1: Confusion matrix heatmap
 cm = confusion_matrix(y_test, y_pred, labels=best_model.classes_)
 cm_percent = cm / cm.sum(axis=1, keepdims=True) * 100
+class_names = label_encoder.inverse_transform(best_model.classes_)
 
 plt.figure(figsize=(12, 8))
 sns.heatmap(
@@ -141,35 +149,34 @@ sns.heatmap(
     annot=True,
     fmt=".1f",
     cmap="Blues",
-    xticklabels=best_model.classes_,
-    yticklabels=best_model.classes_,
+    xticklabels=class_names,
+    yticklabels=class_names,
     cbar_kws={"label": "% of Actual Category"}
 )
-plt.title("Confusion Matrix Percentages - Logistic Regression")
+plt.title("Confusion Matrix - MLP")
 plt.xlabel("Predicted Category")
 plt.ylabel("Actual Category")
 plt.xticks(rotation=45, ha="right")
 plt.yticks(rotation=0)
 plt.tight_layout()
-plt.show()
 
 # Graph 2: Per-category F1 score bar chart
 report = classification_report(y_test, y_pred, output_dict=True)
 
 f1_df = pd.DataFrame([
     {
-        "category": category,
+        "category": label_encoder.inverse_transform([int(category)])[0],
         "f1_score": scores["f1-score"]
     }
     for category, scores in report.items()
-    if category in best_model.classes_
+    if category.isdigit() and int(category) in best_model.classes_
 ])
 
 f1_df = f1_df.sort_values("f1_score", ascending=False)
 
 plt.figure(figsize=(12, 6))
 sns.barplot(data=f1_df, x="category", y="f1_score")
-plt.title("Per-Category F1 Scores - Logistic Regression")
+plt.title("Per-Category F1 Scores - MLP")
 plt.xlabel("Category")
 plt.ylabel("F1 Score")
 plt.ylim(0, 1)

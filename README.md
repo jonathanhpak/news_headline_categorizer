@@ -1,80 +1,46 @@
-## Initial model instructions
-
-### Step 1: Choose a model.
-Choose the model that you want to work on [here](https://docs.google.com/document/d/1b0MIjiUsNkucRr9dzQmKuuD5JdMtrOxLesxPLw9loNU/edit?tab=t.0).
-
-Read through the resources to learn more about the model. Feel free to find more articles/videos. Next meeting, we'll teach each other about the model you trained. 
-
-
-### Step 2: Pull from remote repo
-Update your local repo to get the dataset with the new feature columns you guys created as well as the example model training script (logistic-regressor.py).
-
-First, after you open the project in VS Code, make sure you are on the main branch:
+## Finalizing your model
+Continue working on the branch for your model! If you run:
 ``` shell
 git branch
 ```
+you should see the branch for the model you worked on last week.
 
-If you see main in green with an asterisk to the left of it, great! Stay where you are. Otherwise, switch to the main branch:
-``` shell
-git checkout main
+In your terminal, run
+```shell
+git pull origin main
 ```
+in order to see my updated logistic-regressor.py file, which you'll use as a reference to finish up your model. All the extra code you need to add (besides the new imports) starts at line 90, and the only parts that you should change are the hyperparameters and lists of values in param_grid (lines 94-98 in my file). Code from last week shouldn't be modified.
 
-Now, pull from the remote repo:
-``` shell
-git pull
-```
-
-Your local repo should be up to date now!
-
-
-### Step 3: Create a new local branch
-Create a local branch to train your model.
-``` shell
-git checkout -b model-name
-```
-
-Check to make sure you're on the newly-created branch:
-``` shell
-git branch
-```
-
-
-### Step 4: Create your file (and install any dependencies)
-Create a Python file in the src/models folder. Name it your-model-name and don't forget the .py extension at the end.
-
-You'll be using modules from the scikit-learn library.
-
-### Step 5: Read through the example model
-I trained a logistic regression model on our data. You likely won't need to change any of the code except for replacing the import line and changing the model hyperparameters.
-
-However, please read through the code and understand the steps: preparing the data, splitting the data into train/test sets, training the model, and testing/evaluating the model. 
-It's okay if you don't understand exactly what the code is doing, just try to get a high-level overview of the whole process! If you have any questions about it feel free to message me or bring it up at the next meeting.
-
-### Step 6: Train your model!
-Again, you won't be changing much from the example code, but rather than copy and pasting, try typing each block out to better understand what it's doing.
-
-You will need to change the code to import your model, i.e. this part of the code:
+### Step 1: Tune your model
+First, we'll need to add some extra imports for fine-tuning and visualization. At the top of the logistic-regressor.py file, you can see what to import:
 ```python
-#IMPORT YOUR MODEL HERE
-from sklearn.linear_model import LogisticRegression
+#IMPORT STRATIFIEDKFOLD, GRIDSEARCHCV, SEABORN, MATPLOTLIB
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
+import seaborn as sns
+import matplotlib.pyplot as plt
 ```
 
-Also, you will need to decide the baseline hyperparameters for your model, i.e. this part of the code:
+Each model has hyperparameters whose values affect how well it predicts the target variable.
+In lines 94-98 in logistic-regressor.py (shown below), I list potential hyperparameter values in param_grid. In your own file, replace the hyperparameters and their corresponding lists of values with the hyperparameters specific to your model.
 ```python
-#instantiate model
-#REPLACE WITH YOUR MODEL AND BASELINE HYPERPARAMETERS! Keep random_state = 42 for reproducibility.
-model = LogisticRegression(
-    max_iter=3000,
-    C=2.0,
-    solver="lbfgs",
-    class_weight="balanced",
-    random_state=42
-)
+# LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
+param_grid = {
+    "C": [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10],
+    "class_weight": [None, "balanced"]
+}
 ```
 
-Different models have different hyperparameters, so you will need to do some research into what they are and how they affect the model's performance. Next week, we'll tune our models' hyperparameters to find the combination that results in the most performant model. 
+### Step 2: Measure the best model's performance.
+GridSearchCV tests which parameters in your param_grid work best. When fine-tuning your model, GridSearchCV may take several minutes to run depending on your model and parameter grid (because it essentially has to train and evaluate every possible combination of hyperparameters for the model!). For me, it took a few minutes, but if you're waiting for much longer, you can reduce the number of parameters to test in your param_grid.
 
-Note down your model's score!
+We calculated the accuracy and macro F1 scores of our baseline model last week. For the final model, we'll be recalculating these values to see how our model has improved. 
+
+Note down these values!
+
+### Step 3: Visualize the best model's performance.
+We'll each be creating two visualizations for our models.
+1. A heatmap of the confusion matrix. This helps us visualize which categories the model predicts correctly and which categories get confused.
+2. A bar chart of F1 scores per category. This helps us visualize how well the model performs for each news category.
 
 
 ## Some notes
@@ -104,10 +70,15 @@ Here's the sequence of commands to push your committed changes.
 ``` shell
 git branch
 ```
-3. Update your branch with the main branch in the remote repo. For the most part, there won't be any changes, but it's a good habit to develop when working in a team.
+If you're not, run:
+```shell
+git checkout your-branch-name
+```
+3. Update your branch with the main branch in the remote repo. 
 ``` shell
 git pull origin main
 ```
+
 4. Push your changes. If it's your first time pushing from this branch, run:
 ``` shell
 git push -u origin your-branch-name
