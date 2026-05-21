@@ -1,89 +1,175 @@
-## Finalizing your model
-Continue working on the branch for your model! If you run:
-``` shell
-git branch
-```
-you should see the branch for the model you worked on last week.
+# News Headline Categorizer
 
-In your terminal, run
-```shell
-git pull origin main
-```
-in order to see my updated logistic-regressor.py file, which you'll use as a reference to finish up your model. All the extra code you need to add (besides the new imports) starts at line 90, and the only parts that you should change are the hyperparameters and lists of values in param_grid (lines 94-98 in my file). Code from last week shouldn't be modified.
+A collaborative machine learning project focused on classifying news headlines into topic categories using natural language processing (NLP), engineered headline features, and multiple supervised learning models.
 
-### Step 1: Tune your model
-First, we'll need to add some extra imports for fine-tuning and visualization. At the top of the logistic-regressor.py file, you can see what to import:
-```python
-#IMPORT STRATIFIEDKFOLD, GRIDSEARCHCV, SEABORN, MATPLOTLIB
-from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
-import seaborn as sns
-import matplotlib.pyplot as plt
-```
+This project was developed through UCLA's National Student Data Corps (NSDC).
 
-Each model has hyperparameters whose values affect how well it predicts the target variable.
-In lines 94-98 in logistic-regressor.py (shown below), I list potential hyperparameter values in param_grid. In your own file, replace the hyperparameters and their corresponding lists of values with the hyperparameters specific to your model.
-```python
-# LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
-param_grid = {
-    "C": [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10],
-    "class_weight": [None, "balanced"]
-}
-```
+## Project Overview
 
-### Step 2: Measure the best model's performance.
-GridSearchCV tests which parameters in your param_grid work best. When fine-tuning your model, GridSearchCV may take several minutes to run depending on your model and parameter grid (because it essentially has to train and evaluate every possible combination of hyperparameters for the model!). For me, it took a few minutes, but if you're waiting for much longer, you can reduce the number of parameters to test in your param_grid.
+The goal of this project was to build and evaluate models that can automatically classify short news headlines into one of several categories. Because headlines are brief and information-dense, this project focused on identifying which text-based and structural features are most useful for distinguishing between different types of news content.
 
-We calculated the accuracy and macro F1 scores of our baseline model last week. For the final model, we'll be recalculating these values to see how our model has improved. 
+The project explores questions such as:
 
-Note down these values!
+- How well can machine learning models classify news headlines using only headline text?
+- Which categories are easiest or hardest to distinguish?
+- Which model types perform best on sparse, high-dimensional text data?
+- Do engineered headline features improve performance beyond TF-IDF alone?
 
-### Step 3: Visualize the best model's performance.
-We'll each be creating two visualizations for our models.
-1. A heatmap of the confusion matrix. This helps us visualize which categories the model predicts correctly and which categories get confused.
-2. A bar chart of F1 scores per category. This helps us visualize how well the model performs for each news category.
+## Categories
 
+The dataset includes headlines from 10 news categories:
 
-## Some notes
-Make sure to save your changes by going to File > Save All. You can also turn on autosave.
+- BUSINESS
+- ENTERTAINMENT
+- FOOD & DRINK
+- PARENTING
+- POLITICS
+- SPORTS
+- STYLE & BEAUTY
+- TRAVEL
+- WELLNESS
+- WORLD NEWS
 
-Here's the sequence of commands for committing your changes. Each commit should be a version of your program that runs properly!
-1. Check that you have saved changes to commit.
-``` shell
-git status
-```
-2. Add your changes to the staging area.
-``` shell
-git add .
-```
-3. Check that you have added your changes to the staging area.
-``` shell
-git status
-```
-4. Commit your staged changes.
-``` shell
-git commit -m "explain what changes you made in these quotation marks"
+## Dataset
+
+The project uses a HuffPost news headline dataset containing roughly 50,000 headlines and associated category labels.
+
+Key dataset files:
+
+```text
+data/
+├── NewsCategorizer.csv          # Original dataset
+├── CleanedNews.csv              # Cleaned dataset
+└── HeadlinesWithFeatures.csv    # Dataset with engineered features
 ```
 
-Here's the sequence of commands to push your committed changes.
-1. Make sure you have committed all of your changes first. If not, go through the above sequence of commands.
-2. Make sure you are on the right branch.
-``` shell
-git branch
-```
-If you're not, run:
-```shell
-git checkout your-branch-name
-```
-3. Update your branch with the main branch in the remote repo. 
-``` shell
-git pull origin main
+## Exploratory Data Analysis
+
+EDA focused on understanding category distributions and identifying linguistic patterns across categories. Analyses included:
+
+- Category count distribution
+- Word length and character length distributions
+- Common words by category
+- Sentiment distribution by category
+- Punctuation, digit, and capitalization patterns
+
+These analyses helped guide feature engineering and provided context for model performance.
+
+## Feature Engineering
+
+### Text Features
+
+Headline text was transformed using TF-IDF vectorization, which assigns higher weights to words or phrases that are frequent in a headline but relatively rare across the full dataset.
+
+TF-IDF preprocessing included:
+
+- Lowercasing
+- English stopword removal
+- Unigrams and bigrams
+- Minimum document frequency filtering
+
+### Engineered Features
+
+Additional headline-level features included:
+
+- Word length
+- Character length
+- Presence of punctuation symbols such as `$`, `%`, `?`, `!`, `:`, `#`, and `-`
+- Presence of 1-digit, 2-digit, 3-digit, and 4-digit numbers
+- Presence of all-caps words
+- Sentiment analysis features using TextBlob
+
+Engineered numerical features were scaled before being combined with the sparse TF-IDF matrix.
+
+## Models Evaluated
+
+The project compared several supervised machine learning models:
+
+| Model Group | Models |
+|---|---|
+| Linear Models | Logistic Regression, LinearSVC |
+| Tree-Based Models | Random Forest, XGBoost |
+| Neural Network | Multi-Layer Perceptron (MLP) |
+| Distance-Based Model | K-Nearest Neighbors (KNN) |
+
+Each model used the same train/test split and evaluation metrics to keep comparisons consistent.
+
+## Model Tuning and Evaluation
+
+Models were evaluated using:
+
+- Accuracy
+- Macro F1 score
+- Classification reports
+- Confusion matrix heatmaps
+- Per-category F1 score bar charts
+
+Hyperparameter tuning was performed using GridSearchCV with stratified K-fold cross-validation.
+
+## Final Results
+
+| Model | Final Accuracy | Final Macro F1 |
+|---|---:|---:|
+| Logistic Regression | 0.758 | 0.755 |
+| LinearSVC | 0.769 | 0.766 |
+| MLP | 0.7695 | 0.7647 |
+| XGBoost | 0.663 | 0.664 |
+| Random Forest | 0.61 | 0.61 |
+| KNN | 0.47 | 0.46 |
+
+Among the evaluated models, LinearSVC and MLP achieved the strongest overall performance on the classification task.
+
+The project demonstrated that relatively simple linear models can perform extremely well on sparse NLP classification tasks when paired with strong text representations such as TF-IDF.
+
+## Repository Structure
+
+```text
+news_headline_categorizer/
+├── data/                  # Raw, cleaned, and feature-engineered datasets
+├── src/
+│   ├── EDA/
+│   │   ├── build-features.py
+│   │   └── individual EDA scripts
+│   └── models/
+│       ├── logistic-regression.py
+│       ├── linear-svc.py
+│       ├── random-forest.py
+│       ├── xgboost.py
+│       ├── mlp.py
+│       └── knn.py
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
-4. Push your changes. If it's your first time pushing from this branch, run:
-``` shell
-git push -u origin your-branch-name
+## Technologies Used
+
+- Python
+- pandas
+- NumPy
+- scikit-learn
+- XGBoost
+- SciPy
+- matplotlib
+- seaborn
+- TextBlob
+
+## How to Run
+
+Clone the repository and install the required Python packages.
+
+```bash
+git clone https://github.com/jonathanhpak/news_headline_categorizer
+cd news_headline_categorizer
+pip install -r requirements.txt
 ```
-Otherwise, do:
-``` shell
-git push
+
+Run an individual model script from the project root. For example:
+
+```bash
+python src/models/logistic-regression.py
 ```
+
+## Contributors
+
+This project was completed collaboratively by members of UCLA NSDC.
