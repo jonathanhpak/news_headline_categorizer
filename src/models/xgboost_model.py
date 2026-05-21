@@ -5,6 +5,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import hstack, csr_matrix
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
 from xgboost import XGBClassifier
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+#IMPORT STRATIFIEDKFOLD, GRIDSEARCHCV, SEABORN, MATPLOTLIB
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # load dataset
 df = pd.read_csv("data/HeadlinesWithFeatures.csv")
@@ -31,7 +38,6 @@ vectorizer = TfidfVectorizer(
     lowercase=True,
     ngram_range=(1, 2),    # look at single words and two-word phrases
     min_df=2,              # ignore words that appear in only one headline
-    max_features=5000      # only keep the 5000 most important words
 )
 X_text_train_tfidf = vectorizer.fit_transform(X_text_train)  # learn vocab from training data
 X_text_test_tfidf = vectorizer.transform(X_text_test)        # apply same vocab to test data
@@ -77,3 +83,102 @@ print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
 print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
+
+
+
+# Fine-Tuning with GridSearchCV
+# Define possible hyperparameters to pass into the model and test in the GridSearchCV
+
+
+# LIST POSSIBLE VALUES FOR HYPERPARAMETERS SPECIFIC TO YOUR MODEL
+param_grid = {
+    "n_estimators": [150, 200],
+    "max_depth": [6],
+    "learning_rate": [0.05, 0.1],
+    "subsample": [0.8]
+}
+
+# Define the type of cross-validation to use. StratifiedKFold preserves class proportions across folds.
+kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+# Initialize GridSearchCV object with your model, grid of parameters, type of CV, and scoring metric
+grid = GridSearchCV(
+    model,
+    param_grid,
+    cv=kf,
+    scoring="f1_macro",
+    n_jobs=-1,
+    verbose=2 
+
+)
+
+# Fit to the training/validation data
+grid.fit(X_train, y_train_enc)
+
+# best_model is a trained model using the hyperparameter values that achieved the best cross-validation Macro F1 score
+best_model = grid.best_estimator_
+print(grid.best_params_)
+
+# Evaluate on final model on test data
+y_pred_enc = best_model.predict(X_test)
+y_pred = le.inverse_transform(y_pred_enc) 
+class_labels = le.classes_   
+
+
+# Compute new performance metrics
+print("\n\nBest Model Performance on Test Set:")
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
+
+print("\nMacro F1:", f1_score(y_test, y_pred, average="macro"))
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# Graph 1: Confusion matrix heatmap
+cm = confusion_matrix(y_test, y_pred, labels=class_labels)
+cm_percent = cm / cm.sum(axis=1, keepdims=True) * 100
+
+plt.figure(figsize=(12, 8))
+sns.heatmap(
+    cm_percent,
+    annot=True,
+    fmt=".1f",
+    cmap="Blues",
+    xticklabels=class_labels,
+    yticklabels=class_labels,
+    cbar_kws={"label": "% of Actual Category"}
+)
+plt.title("Confusion Matrix - XGBoost")
+plt.xlabel("Predicted Category")
+plt.ylabel("Actual Category")
+plt.xticks(rotation=45, ha="right")
+plt.yticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+# Graph 2: Per-category F1 score bar chart
+report = classification_report(y_test, y_pred, output_dict=True)
+
+f1_df = pd.DataFrame([
+    {
+        "category": category,
+        "f1_score": scores["f1-score"]
+    }
+    for category, scores in report.items()
+    if category in class_labels
+])
+
+f1_df = f1_df.sort_values("f1_score", ascending=False)
+
+plt.figure(figsize=(12, 6))
+sns.barplot(data=f1_df, x="category", y="f1_score")
+plt.title("Per-Category F1 Scores - XGBoost")
+plt.xlabel("Category")
+plt.ylabel("F1 Score")
+plt.ylim(0, 1)
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+plt.show()
